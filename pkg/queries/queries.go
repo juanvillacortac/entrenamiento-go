@@ -1,6 +1,7 @@
 package queries
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
@@ -39,6 +40,7 @@ func QuerySongs(params fetchers.Params, useCache bool) (entities.Songs, error) {
 }
 
 func SyncSongsDB(params fetchers.Params) (entities.Songs, error) {
+	fmt.Println("Syncing database with APIs...")
 	songs, err := fetchers.RetrieveFromApis(params)
 	if err != nil {
 		return entities.Songs{}, err
@@ -46,6 +48,7 @@ func SyncSongsDB(params fetchers.Params) (entities.Songs, error) {
 	db.DB.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&songs)
+	fmt.Println("Database synced")
 	return songs, err
 }
 
