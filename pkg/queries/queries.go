@@ -25,7 +25,7 @@ func QuerySongs(params fetchers.Params) []entities.Song {
 	query.Find(&songs)
 	if len(songs) == 0 {
 		songs, _ = fetchers.RetrieveFromApis(params)
-		go db.DB.Clauses(clause.OnConflict{
+		db.DB.Clauses(clause.OnConflict{
 			UpdateAll: true,
 		}).Create(&songs)
 		query.Find(&songs)
