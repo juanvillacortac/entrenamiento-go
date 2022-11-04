@@ -1,7 +1,7 @@
 package queries
 
 import (
-	"time"
+	"strings"
 
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
@@ -20,43 +20,55 @@ func QuerySongs(params fetchers.Params, useCache bool) (entities.Songs, error) {
 		return songs, nil
 	}
 	if params.Name != "" {
-		query = query.Where("name LIKE ?", "%"+params.Name+"%")
+		query = query.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(params.Name)+"%")
 	}
 	if params.Album != "" {
-		query = query.Where("album LIKE ?", "%"+params.Album+"%")
+		query = query.Where("LOWER(album) LIKE ?", "%"+strings.ToLower(params.Album)+"%")
 	}
 	if params.Artist != "" {
-		query = query.Where("artist LIKE ?", "%"+params.Artist+"%")
+		query = query.Where("LOWER(artist) LIKE ?", "%"+strings.ToLower(params.Artist)+"%")
 	}
-	query.Find(&songs)
-	if len(songs) == 0 {
-		songs, err := fetchers.RetrieveFromApis(params)
-		if err != nil {
-			return songs, err
-		}
-		db.DB.Clauses(clause.OnConflict{
-			UpdateAll: true,
-		}).Create(&songs)
-		query.Find(&songs)
+	query.Order(clause.OrderByColumn{
+		Column: clause.Column{
+			Name: "name",
+		},
+		Desc: true,
+	}).Find(&songs)
+	go SyncSongsDB(params)
+	return songs, nil
+}
+
+func SyncSongsDB(params fetchers.Params) (entities.Songs, error) {
+	songs, err := fetchers.RetrieveFromApis(params)
+	if err != nil {
+		return entities.Songs{}, err
 	}
+	db.DB.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&songs)
+	return songs, err
+}
+
+func CacheSongs(params fetchers.Params) (entities.Songs, error) {
+	songs, err := QuerySongs(params, false)
+	if err != nil {
+		return entities.Songs{}, err
+	}
+	db.RDB.Set(db.RCtx, params.Hash(), songs.String(), 0)
 	return songs, nil
 }
 
 func QuerySongsWithCache(params fetchers.Params) (*entities.Songs, error) {
-	hash := params.Hash()
-	songs := entities.Songs{}
-	cached, _ := db.RDB.Get(db.RCtx, hash).Result()
+	cached, _ := db.RDB.Get(db.RCtx, params.Hash()).Result()
 	if cached != "" {
+		songs := entities.Songs{}
 		songs, err := entities.UnmarshalSongs(cached)
 		if err != nil {
 			return &songs, err
 		}
+		go CacheSongs(params)
 		return &songs, nil
 	}
-	songs, err := QuerySongs(params, false)
-	if err != nil {
-		return &songs, err
-	}
-	db.RDB.Set(db.RCtx, hash, songs.String(), 60*time.Minute)
-	return &songs, nil
+	songs, err := CacheSongs(params)
+	return &songs, err
 }

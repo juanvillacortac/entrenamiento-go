@@ -10,11 +10,13 @@ import (
 
 func HandleSongs(c *gin.Context) {
 	params := fetchers.Params{}
+	_, force := c.GetQuery("force")
+	println(force)
 	if err := c.BindQuery(&params); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	songs, err := queries.QuerySongs(params, true)
+	songs, err := queries.QuerySongs(params, !force)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
