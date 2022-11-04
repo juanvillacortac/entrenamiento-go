@@ -1,11 +1,15 @@
 package fetchers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"time"
 
 	client "github.com/bozd4g/go-http-client"
+	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
+	"github.com/juanvillacortac/entrenamiento-go/pkg/utils"
 )
 
 type ItunesResponse struct {
@@ -16,9 +20,9 @@ type ItunesResponse struct {
 type ItunesResponseResult struct {
 	WrapperType             string    `json:"wrapperType"`
 	Kind                    string    `json:"kind"`
-	ArtistID                int       `json:"artistId,omitempty"`
-	CollectionID            int       `json:"collectionId,omitempty"`
-	TrackID                 int       `json:"trackId"`
+	ArtistID                int64     `json:"artistId,omitempty"`
+	CollectionID            int64     `json:"collectionId,omitempty"`
+	TrackID                 int64     `json:"trackId"`
 	ArtistName              string    `json:"artistName"`
 	CollectionName          string    `json:"collectionName,omitempty"`
 	TrackName               string    `json:"trackName"`
@@ -36,11 +40,11 @@ type ItunesResponseResult struct {
 	ReleaseDate             time.Time `json:"releaseDate"`
 	CollectionExplicitness  string    `json:"collectionExplicitness"`
 	TrackExplicitness       string    `json:"trackExplicitness"`
-	DiscCount               int       `json:"discCount,omitempty"`
-	DiscNumber              int       `json:"discNumber,omitempty"`
-	TrackCount              int       `json:"trackCount,omitempty"`
-	TrackNumber             int       `json:"trackNumber,omitempty"`
-	TrackTimeMillis         int       `json:"trackTimeMillis"`
+	DiscCount               int64     `json:"discCount,omitempty"`
+	DiscNumber              int64     `json:"discNumber,omitempty"`
+	TrackCount              int64     `json:"trackCount,omitempty"`
+	TrackNumber             int64     `json:"trackNumber,omitempty"`
+	TrackTimeMillis         int64     `json:"trackTimeMillis"`
 	Country                 string    `json:"country"`
 	Currency                string    `json:"currency"`
 	PrimaryGenreName        string    `json:"primaryGenreName"`
@@ -58,13 +62,31 @@ type ItunesResponseResult struct {
 	CollectionArtistName    string    `json:"collectionArtistName,omitempty"`
 }
 
-// func (r ItunesResponse) Transform() []entities.Song {
-// }
+func (r *ItunesResponseResult) GenerateId() string {
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s_%d", entities.Itunes, r.TrackID)))
+}
 
-func FetchFromItunes(query string) (*ItunesResponse, error) {
-	httpClient := client.New("https://jsonplaceholder.typicode.com/")
+func (r *ItunesResponse) Transform() []entities.Song {
+	songs := make([]entities.Song, 0)
+	for _, result := range r.Results {
+		songs = append(songs, entities.Song{
+			Id:       result.GenerateId(),
+			Name:     result.TrackName,
+			Artist:   result.ArtistName,
+			Duration: utils.FormatDurationFromMilliseconds(result.TrackTimeMillis),
+			Album:    result.CollectionName,
+			Artwork:  result.ArtworkURL100,
+			Price:    fmt.Sprintf("%s %.2f", result.Currency, result.TrackPrice),
+			Origin:   entities.Itunes,
+		})
+	}
+	return songs
+}
 
-	request, err := httpClient.Get(fmt.Sprintf("/search?term=%s", query))
+func FetchFromItunes(query string) (ApiResponse, error) {
+	httpClient := client.New("https://itunes.apple.com")
+
+	request, err := httpClient.Get(fmt.Sprintf("/search?entity=song&term=%s", url.QueryEscape(query)))
 	if err != nil {
 		return nil, err
 	}
@@ -74,11 +96,11 @@ func FetchFromItunes(query string) (*ItunesResponse, error) {
 		return nil, err
 	}
 
-	var response *ItunesResponse
-	err = json.Unmarshal(httpResponse.Get().Body, response)
+	var response ItunesResponse
+	err = json.Unmarshal(httpResponse.Get().Body, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return &response, nil
 }
