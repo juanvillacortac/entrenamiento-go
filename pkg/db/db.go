@@ -1,14 +1,18 @@
 package db
 
 import (
+	"context"
 	"os"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
+var RDB *redis.Client
+var RCtx = context.Background()
 
 func ConnectDatabase() {
 	db, err := gorm.Open(postgres.New(postgres.Config{DSN: os.Getenv("DATABASE_URL")}))
@@ -20,4 +24,10 @@ func ConnectDatabase() {
 	db.AutoMigrate(&entities.Song{})
 
 	DB = db
+
+	RDB = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
 }

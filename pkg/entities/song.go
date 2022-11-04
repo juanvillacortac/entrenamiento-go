@@ -1,5 +1,7 @@
 package entities
 
+import "encoding/json"
+
 type SongOrigin string
 
 const (
@@ -15,4 +17,17 @@ type Song struct {
 	Artwork  string     `json:"artwork"`
 	Price    string     `json:"price"`
 	Origin   SongOrigin `json:"origin"`
+}
+
+type Songs []Song
+
+func (songs Songs) String() string {
+	b, _ := json.Marshal(songs)
+	return string(b)
+}
+
+func UnmarshalSongs(str string) (Songs, error) {
+	var songs Songs
+	err := json.Unmarshal([]byte(str), &songs)
+	return songs, err
 }

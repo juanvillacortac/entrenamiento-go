@@ -1,11 +1,9 @@
 package fetchers
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strings"
 	"time"
 
 	client "github.com/bozd4g/go-http-client"
@@ -64,7 +62,7 @@ type ItunesResponseResult struct {
 }
 
 func (r *ItunesResponseResult) GenerateId() string {
-	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s_%d", entities.Itunes, r.TrackID)))
+	return utils.Btoa(fmt.Sprintf("%s_%d", entities.Itunes, r.TrackID))
 }
 
 func (r *ItunesResponse) Transform() []entities.Song {
@@ -87,14 +85,7 @@ func (r *ItunesResponse) Transform() []entities.Song {
 func FetchFromItunes(params Params) (ApiResponse, error) {
 	httpClient := client.New("https://itunes.apple.com")
 
-	var terms []string
-	for _, s := range []string{params.Name, params.Album, params.Artist} {
-		if strings.TrimSpace(s) != "" {
-			terms = append(terms, s)
-		}
-	}
-
-	request, err := httpClient.Get(fmt.Sprintf("/search?entity=song&term=%s", url.QueryEscape(strings.Join(terms, "-"))))
+	request, err := httpClient.Get(fmt.Sprintf("/search?entity=song&term=%s", url.QueryEscape(params.StringWithDelimiter("-"))))
 	if err != nil {
 		return nil, err
 	}
