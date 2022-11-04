@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	client "github.com/bozd4g/go-http-client"
@@ -49,7 +50,7 @@ type ItunesResponseResult struct {
 	Currency                string    `json:"currency"`
 	PrimaryGenreName        string    `json:"primaryGenreName"`
 	IsStreamable            bool      `json:"isStreamable,omitempty"`
-	CollectionArtistID      int       `json:"collectionArtistId,omitempty"`
+	CollectionArtistID      int64     `json:"collectionArtistId,omitempty"`
 	CollectionArtistViewURL string    `json:"collectionArtistViewUrl,omitempty"`
 	TrackRentalPrice        float64   `json:"trackRentalPrice,omitempty"`
 	CollectionHdPrice       float64   `json:"collectionHdPrice,omitempty"`
@@ -70,7 +71,7 @@ func (r *ItunesResponse) Transform() []entities.Song {
 	songs := make([]entities.Song, 0)
 	for _, result := range r.Results {
 		songs = append(songs, entities.Song{
-			Id:       result.GenerateId(),
+			ID:       result.GenerateId(),
 			Name:     result.TrackName,
 			Artist:   result.ArtistName,
 			Duration: utils.FormatDurationFromMilliseconds(result.TrackTimeMillis),
@@ -83,10 +84,17 @@ func (r *ItunesResponse) Transform() []entities.Song {
 	return songs
 }
 
-func FetchFromItunes(query string) (ApiResponse, error) {
+func FetchFromItunes(params Params) (ApiResponse, error) {
 	httpClient := client.New("https://itunes.apple.com")
 
-	request, err := httpClient.Get(fmt.Sprintf("/search?entity=song&term=%s", url.QueryEscape(query)))
+	var terms []string
+	for _, s := range []string{params.Name, params.Album, params.Artist} {
+		if strings.TrimSpace(s) != "" {
+			terms = append(terms, s)
+		}
+	}
+
+	request, err := httpClient.Get(fmt.Sprintf("/search?entity=song&term=%s", url.QueryEscape(strings.Join(terms, "-"))))
 	if err != nil {
 		return nil, err
 	}

@@ -7,13 +7,25 @@ type ApiResponse interface {
 }
 
 type Params struct {
-	Name   string `json:"name"`
-	Artist string `json:"artist"`
-	Album  string `json:"album"`
+	Name   string `form:"name" json:"name"`
+	Artist string `form:"artist" json:"artist"`
+	Album  string `form:"album" json:"album"`
 }
 
-type Fetcher func(query string) (ApiResponse, error)
+type Fetcher func(params Params) (ApiResponse, error)
 
 var RegisteredFetchers []Fetcher = []Fetcher{
 	FetchFromItunes,
+}
+
+func RetrieveFromApis(params Params) ([]entities.Song, error) {
+	songs := make([]entities.Song, 0)
+	for _, fetcher := range RegisteredFetchers {
+		response, err := fetcher(params)
+		if err != nil {
+			return songs, err
+		}
+		songs = append(songs, response.Transform()...)
+	}
+	return songs, nil
 }

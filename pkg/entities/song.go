@@ -7,7 +7,7 @@ const (
 )
 
 type Song struct {
-	Id       string     `json:"id"`
+	ID       string     `json:"id" gorm:"primary_key"`
 	Name     string     `json:"name"`
 	Artist   string     `json:"artist"`
 	Duration string     `json:"duration"`
