@@ -16,30 +16,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/register": {
-            "post": {
-                "description": "Responds with the list of all books as JSON.",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "songs"
-                ],
-                "summary": "Register a new user",
-                "parameters": [
-                    {
-                        "description": "User Payload",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.UserLogin"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/search": {
             "get": {
                 "description": "Responds with the list of all books as JSON.",
@@ -119,21 +95,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "price": {
-                    "type": "string"
-                }
-            }
-        },
-        "entities.UserLogin": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 }
             }

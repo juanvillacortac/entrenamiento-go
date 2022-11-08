@@ -19,37 +19,11 @@ definitions:
       price:
         type: string
     type: object
-  entities.UserLogin:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
 info:
   contact: {}
   title: Songs Indexer
   version: "1.0"
 paths:
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Responds with the list of all books as JSON.
-      parameters:
-      - description: User Payload
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/entities.UserLogin'
-      responses: {}
-      summary: Register a new user
-      tags:
-      - songs
   /search:
     get:
       consumes:

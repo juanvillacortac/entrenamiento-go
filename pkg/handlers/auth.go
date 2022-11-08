@@ -10,13 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// RegisterUser godoc
-// @Summary     Register a new user
-// @Description Responds with the list of all books as JSON.
-// @Tags        songs
-// @Accept      json
-// @Param       user body    entities.UserLogin true "User Payload"
-// @Router      /auth/register [post]
 func RegisterUserHandler(c *gin.Context) {
 	var data entities.UserLogin
 	if err := c.ShouldBind(&data); err != nil {
