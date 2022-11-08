@@ -7,6 +7,7 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/juanvillacortac/entrenamiento-go/pkg/controllers"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/handlers"
@@ -41,13 +42,10 @@ func AuthMiddleware(r *gin.Engine) gin.HandlerFunc {
 			if err := c.ShouldBind(&data); err != nil {
 				return nil, errors.New("missing Email or Password")
 			}
-			var user entities.User
 
-			db.DB.Where(&entities.User{
-				Email: data.Email,
-			}).First(&user)
+			user := controllers.GetUserByEmail(data.Email)
 
-			if user.Email != "" {
+			if user != nil {
 				err := bcrypt.CompareHashAndPassword([]byte(data.Password), []byte(user.PasswordHash))
 				if err != nil {
 					return &entities.UserSession{

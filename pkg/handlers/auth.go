@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/juanvillacortac/entrenamiento-go/pkg/controllers"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
 	"golang.org/x/crypto/bcrypt"
@@ -17,13 +18,10 @@ func RegisterUserHandler(c *gin.Context) {
 		})
 		return
 	}
-	var user entities.User
 
-	db.DB.Where(&entities.User{
-		Email: data.Email,
-	}).First(&user)
+	user := controllers.GetUserByEmail(data.Email)
 
-	if user.Email != "" {
+	if user != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "email taken",
 		})
