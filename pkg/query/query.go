@@ -16,6 +16,10 @@ func QuerySongs(params api.Params, useCache bool) (entities.Songs, error) {
 		return *songs, err
 	}
 	songs := controllers.GetSongsByParams(params)
+	if len(songs) == 0 {
+		songs, err := SyncSongsDB(params)
+		return songs, err
+	}
 	go SyncSongsDB(params)
 	return songs, nil
 }

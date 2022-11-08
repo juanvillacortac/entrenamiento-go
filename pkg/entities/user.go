@@ -11,7 +11,7 @@ type User struct {
 }
 
 type UserSession struct {
-	UserId uint
+	UserId string
 }
 
 type UserLogin struct {

@@ -2,7 +2,9 @@ package middlewares
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -34,7 +36,7 @@ func AuthMiddleware(r *gin.Engine) gin.HandlerFunc {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &entities.UserSession{
-				UserId: claims[identityKey].(uint),
+				UserId: claims[identityKey].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -49,7 +51,7 @@ func AuthMiddleware(r *gin.Engine) gin.HandlerFunc {
 				err := bcrypt.CompareHashAndPassword([]byte(data.Password), []byte(user.PasswordHash))
 				if err != nil {
 					return &entities.UserSession{
-						UserId: user.ID,
+						UserId: fmt.Sprintf("%v", user.ID),
 					}, nil
 				}
 			}
@@ -59,7 +61,8 @@ func AuthMiddleware(r *gin.Engine) gin.HandlerFunc {
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			if v, ok := data.(*entities.UserSession); ok {
 				var count int64
-				db.DB.Model(&entities.User{}).Where("id = ?", v.UserId).Count(&count)
+				id, _ := strconv.ParseUint(v.UserId, 10, 64)
+				db.DB.Model(&entities.User{}).Where("id = ?", id).Count(&count)
 				return count > 0
 			}
 			return false
@@ -74,7 +77,6 @@ func AuthMiddleware(r *gin.Engine) gin.HandlerFunc {
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
 	})
-
 	if err != nil {
 		log.Fatal("JWT Error:" + err.Error())
 	}
