@@ -1,0 +1,87 @@
+basePath: /api/v1
+definitions:
+  entities.Song:
+    properties:
+      album:
+        type: string
+      artist:
+        type: string
+      artwork:
+        type: string
+      duration:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      origin:
+        type: string
+      price:
+        type: string
+    type: object
+  entities.UserLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+info:
+  contact: {}
+  title: Songs Indexer
+  version: "1.0"
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Responds with the list of all books as JSON.
+      parameters:
+      - description: User Payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UserLogin'
+      responses: {}
+      summary: Register a new user
+      tags:
+      - songs
+  /search:
+    get:
+      consumes:
+      - application/json
+      description: Responds with the list of all books as JSON.
+      parameters:
+      - description: Song name
+        in: query
+        name: name
+        type: string
+      - description: Album name
+        in: query
+        name: album
+        type: string
+      - description: Artist name
+        in: query
+        name: artist
+        type: string
+      - description: Bypass cache
+        in: query
+        name: force
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Song'
+            type: array
+      summary: Get songs array
+      tags:
+      - songs
+swagger: "2.0"

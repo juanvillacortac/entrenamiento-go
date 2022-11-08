@@ -1,0 +1,133 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Songs Indexer",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/auth/register": {
+            "post": {
+                "description": "Responds with the list of all books as JSON.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User Payload",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UserLogin"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/search": {
+            "get": {
+                "description": "Responds with the list of all books as JSON.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Get songs array",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Song name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Album name",
+                        "name": "album",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Artist name",
+                        "name": "artist",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Bypass cache",
+                        "name": "force",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.Song"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entities.Song": {
+            "type": "object",
+            "properties": {
+                "album": {
+                    "type": "string"
+                },
+                "artist": {
+                    "type": "string"
+                },
+                "artwork": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "origin": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.UserLogin": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
