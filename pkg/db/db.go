@@ -21,7 +21,7 @@ func ConnectDatabase() {
 		panic("Failed to connect to database!")
 	}
 
-	db.AutoMigrate(&entities.Song{})
+	db.AutoMigrate(&entities.Song{}, &entities.User{})
 
 	DB = db
 

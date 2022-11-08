@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/handlers"
+	"github.com/juanvillacortac/entrenamiento-go/pkg/middlewares"
 )
 
 func main() {
@@ -14,6 +15,12 @@ func main() {
 
 	db.ConnectDatabase()
 
-	r.GET("/", handlers.HandleSongs)
+	authMiddleware := middlewares.AuthMiddleware(r)
+
+	api := r.Group("/api")
+	api.Use(authMiddleware)
+	{
+		api.GET("/search", handlers.HandleSongs)
+	}
 	r.Run()
 }

@@ -1,4 +1,4 @@
-package fetchers
+package api
 
 import (
 	"strings"
@@ -37,13 +37,13 @@ func (p Params) StringWithDelimiter(delimiter string) string {
 
 type Fetcher func(params Params) (ApiResponse, error)
 
-var RegisteredFetchers []Fetcher = []Fetcher{
+var RegisteredApis []Fetcher = []Fetcher{
 	FetchFromItunes,
 }
 
 func RetrieveFromApis(params Params) ([]entities.Song, error) {
 	songs := make([]entities.Song, 0)
-	for _, fetcher := range RegisteredFetchers {
+	for _, fetcher := range RegisteredApis {
 		response, err := fetcher(params)
 		if err != nil {
 			return songs, err

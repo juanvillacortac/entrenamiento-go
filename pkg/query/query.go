@@ -1,22 +1,22 @@
-package queries
+package query
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/juanvillacortac/entrenamiento-go/pkg/api"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/db"
 	"github.com/juanvillacortac/entrenamiento-go/pkg/entities"
-	"github.com/juanvillacortac/entrenamiento-go/pkg/fetchers"
 	"gorm.io/gorm/clause"
 )
 
-func QuerySongs(params fetchers.Params, useCache bool) (entities.Songs, error) {
+func QuerySongs(params api.Params, useCache bool) (entities.Songs, error) {
 	if useCache {
 		songs, err := QuerySongsWithCache(params)
 		return *songs, err
 	}
 	songs := []entities.Song{}
-	query := db.DB.Preload("Songs")
+	query := db.DB
 	if params.Name == "" && params.Album == "" && params.Artist == "" {
 		return songs, nil
 	}
@@ -39,9 +39,9 @@ func QuerySongs(params fetchers.Params, useCache bool) (entities.Songs, error) {
 	return songs, nil
 }
 
-func SyncSongsDB(params fetchers.Params) (entities.Songs, error) {
+func SyncSongsDB(params api.Params) (entities.Songs, error) {
 	fmt.Println("Syncing database with APIs...")
-	songs, err := fetchers.RetrieveFromApis(params)
+	songs, err := api.RetrieveFromApis(params)
 	if err != nil {
 		return entities.Songs{}, err
 	}
@@ -52,7 +52,7 @@ func SyncSongsDB(params fetchers.Params) (entities.Songs, error) {
 	return songs, err
 }
 
-func CacheSongs(params fetchers.Params) (entities.Songs, error) {
+func CacheSongs(params api.Params) (entities.Songs, error) {
 	songs, err := QuerySongs(params, false)
 	if err != nil {
 		return entities.Songs{}, err
@@ -61,7 +61,7 @@ func CacheSongs(params fetchers.Params) (entities.Songs, error) {
 	return songs, nil
 }
 
-func QuerySongsWithCache(params fetchers.Params) (*entities.Songs, error) {
+func QuerySongsWithCache(params api.Params) (*entities.Songs, error) {
 	cached, _ := db.RDB.Get(db.RCtx, params.Hash()).Result()
 	if cached != "" {
 		songs := entities.Songs{}

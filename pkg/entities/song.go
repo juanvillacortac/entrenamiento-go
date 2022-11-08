@@ -5,7 +5,8 @@ import "encoding/json"
 type SongOrigin string
 
 const (
-	Itunes SongOrigin = "itunes"
+	Itunes      SongOrigin = "itunes"
+	ChartLyrics SongOrigin = "chartlyrics"
 )
 
 type Song struct {
