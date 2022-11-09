@@ -43,7 +43,7 @@ Registro de usuarios
 
 ```json
 {
-  "state": "string"
+  "status": "string"
 }
 ```
 
